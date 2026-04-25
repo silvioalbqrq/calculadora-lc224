@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora LC 224/2025 — Lucro Presumido</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0f14;
+    --bg2: #13141b;
+    --bg3: #1a1c26;
+    --border: rgba(255,255,255,0.07);
+    --border-strong: rgba(255,255,255,0.14);
+    --text: #e8e9f0;
+    --text-muted: #7c7e8e;
+    --text-dim: #4a4c5e;
+    --accent: #6c8fff;
+    --accent-glow: rgba(108,143,255,0.18);
+    --accent2: #a78bfa;
+    --green: #34d399;
+    --green-bg: rgba(52,211,153,0.10);
+    --red: #f87171;
+    --red-bg: rgba(248,113,113,0.10);
+    --amber: #fbbf24;
+    --amber-bg: rgba(251,191,36,0.10);
+    --c1: #6c8fff;
+    --c2: #a78bfa;
+    --c3: #34d399;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #0e0f14 0%, #1a1030 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 2rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(108,143,255,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(108,143,255,0.12);
+    border: 1px solid rgba(108,143,255,0.25);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  .header-badge::before { content: '●'; font-size: 8px; }
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 400;
+    line-height: 1.2;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  h1 em { font-style: italic; color: var(--accent2); }
+  .header-sub {
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 300;
+  }
+
+  /* ── Main layout ── */
+  .main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+  /* ── Scenario selector ── */
+  .scenario-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .scenario-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 2rem;
+  }
+  .stab {
+    position: relative;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+  .stab:hover { border-color: var(--border-strong); background: var(--bg3); }
+  .stab.active { border-color: transparent; }
+  .stab.active-1 { background: linear-gradient(135deg, rgba(52,211,153,0.08), rgba(52,211,153,0.03)); border-color: rgba(52,211,153,0.3); }
+  .stab.active-2 { background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(251,191,36,0.03)); border-color: rgba(251,191,36,0.3); }
+  .stab.active-3 { background: linear-gradient(135deg, rgba(248,113,113,0.08), rgba(248,113,113,0.03)); border-color: rgba(248,113,113,0.3); }
+  .stab-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .stab-1 .stab-num, .active-1 .stab-num { color: var(--green); }
+  .stab-2 .stab-num, .active-2 .stab-num { color: var(--amber); }
+  .stab-3 .stab-num, .active-3 .stab-num { color: var(--red); }
+  .stab-title { font-size: 12px; font-weight: 500; color: var(--text); line-height: 1.4; }
+  .stab-desc { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
+  .stab-dot {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .stab.active .stab-dot { opacity: 1; }
+  .stab.active-1 .stab-dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .stab.active-2 .stab-dot { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .stab.active-3 .stab-dot { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+  /* ── Controls grid ── */
+  .controls-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+  .ctrl-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+  }
+  .ctrl-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    padding: 8px 10px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  select:hover, select:focus { border-color: var(--accent); }
+  option { background: #1a1c26; }
+
+  /* ── Inputs grid ── */
+  .inputs-section { margin-bottom: 1.5rem; }
+  .inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .inp-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .inp-card:focus-within { border-color: var(--accent); }
+  .inp-card.t4 { border-color: rgba(108,143,255,0.2); background: rgba(108,143,255,0.04); }
+  .inp-quarter {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .inp-label { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+  .inp-field {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .inp-prefix { font-size: 12px; color: var(--text-dim); font-family: 'DM Mono', monospace; }
+  input[type=number] {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    padding: 8px 10px;
+    outline: none;
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+  }
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input[type=number]:focus { border-color: var(--accent); }
+  .inp-limit-bar {
+    margin-top: 10px;
+    height: 3px;
+    background: var(--bg3);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .inp-limit-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s, background 0.3s;
+  }
+  .inp-limit-label { font-size: 10px; color: var(--text-dim); margin-top: 4px; font-family: 'DM Mono', monospace; }
+
+  /* ── Metric cards ── */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+  .metric-card {
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .metric-card.neutral { background: var(--bg2); border: 1px solid var(--border); }
+  .metric-card.positive { background: var(--green-bg); border: 1px solid rgba(52,211,153,0.2); }
+  .metric-card.negative { background: var(--red-bg); border: 1px solid rgba(248,113,113,0.2); }
+  .metric-card.warning { background: var(--amber-bg); border: 1px solid rgba(251,191,36,0.2); }
+  .metric-label { font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+  .metric-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+    line-height: 1.1;
+  }
+  .metric-card.neutral .metric-value { color: var(--text); }
+  .metric-card.positive .metric-value { color: var(--green); }
+  .metric-card.negative .metric-value { color: var(--red); }
+  .metric-card.warning .metric-value { color: var(--amber); }
+  .metric-sub { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+  /* ── Table ── */
+  .table-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  table {
+    width: 100%;
+    min-width: 820px;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  /* Larguras das 8 colunas */
+  table colgroup col:nth-child(1) { width: 120px; }
+  table colgroup col:nth-child(2) { width: 130px; }
+  table colgroup col:nth-child(3) { width: 120px; }
+  table colgroup col:nth-child(4) { width: 120px; }
+  table colgroup col:nth-child(5) { width: 120px; }
+  table colgroup col:nth-child(6) { width: 110px; }
+  table colgroup col:nth-child(7) { width: 110px; }
+  table colgroup col:nth-child(8) { width: min-content; min-width: 110px; }
+  thead th {
+    text-align: left;
+    padding: 10px 10px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Última coluna — nunca truncar */
+  thead th:last-child,
+  tbody td:last-child,
+  tfoot td:last-child {
+    white-space: nowrap;
+    overflow: visible;
+    min-width: 110px;
+  }
+  tbody td {
+    padding: 12px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 12px;
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background 0.15s; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  tbody tr.t4-row { background: rgba(108,143,255,0.05); }
+  tfoot td {
+    padding: 11px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    border-top: 1px solid var(--border-strong);
+  }
+  .num { text-align: right; font-family: 'DM Mono', monospace; white-space: nowrap; }
+  .pill {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+  .pill-green { background: rgba(52,211,153,0.15); color: var(--green); }
+  .pill-amber { background: rgba(251,191,36,0.15); color: var(--amber); }
+  .pill-red { background: rgba(248,113,113,0.15); color: var(--red); }
+  .pill-blue { background: rgba(108,143,255,0.15); color: var(--accent); }
+
+  /* ── Calculation memory ── */
+  .calc-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .calc-box-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .calc-box-title {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .calc-steps { padding: 8px 0; }
+  .calc-step {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.1s;
+  }
+  .calc-step:last-child { border-bottom: none; }
+  .calc-step:hover { background: rgba(255,255,255,0.02); }
+  .calc-step-key {
+    font-size: 12px;
+    color: var(--text-muted);
+    flex: 1;
+    line-height: 1.5;
+  }
+  .calc-step-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    text-align: right;
+  }
+  .calc-step-val.ok { color: var(--green); }
+  .calc-step-val.warn { color: var(--red); }
+  .calc-step-val.info { color: var(--accent); }
+
+  /* ── Restituição alert ── */
+  .restit-alert {
+    display: none;
+    background: linear-gradient(135deg, rgba(52,211,153,0.08), rgba(52,211,153,0.04));
+    border: 1px solid rgba(52,211,153,0.25);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 1.5rem;
+    font-size: 13px;
+  }
+  .restit-alert.show { display: flex; align-items: flex-start; gap: 12px; }
+  .restit-icon { color: var(--green); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .restit-text { color: var(--text); line-height: 1.6; }
+  .restit-value { font-family: 'DM Mono', monospace; font-weight: 500; color: var(--green); }
+
+  /* ── Footer ── */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 16px 2rem;
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* ── Tema claro ── */
+  body.light {
+    --bg: #f0f2f8;
+    --bg2: #ffffff;
+    --bg3: #e8eaf2;
+    --border: rgba(0,0,0,0.08);
+    --border-strong: rgba(0,0,0,0.16);
+    --text: #1a1c2e;
+    --text-muted: #5c5f78;
+    --text-dim: #9496a8;
+    --accent: #3b5ce4;
+    --accent2: #7c3aed;
+    --green: #059669;
+    --green-bg: rgba(5,150,105,0.08);
+    --red: #dc2626;
+    --red-bg: rgba(220,38,38,0.08);
+    --amber: #b45309;
+    --amber-bg: rgba(180,83,9,0.08);
+  }
+  body.light { background: var(--bg); }
+  body.light .header { background: linear-gradient(135deg, #dde1f5 0%, #ede8ff 100%); }
+  body.light select, body.light input[type=number] { background: #f8f9fd; color: var(--text); }
+  body.light .stab { background: #fff; }
+  body.light .stab:hover { background: #f0f2f8; }
+  body.light .stab.active-1 { background: linear-gradient(135deg, rgba(5,150,105,0.08), rgba(5,150,105,0.03)); }
+  body.light .stab.active-2 { background: linear-gradient(135deg, rgba(180,83,9,0.08), rgba(180,83,9,0.03)); }
+  body.light .stab.active-3 { background: linear-gradient(135deg, rgba(220,38,38,0.08), rgba(220,38,38,0.03)); }
+  body.light .pill-green { background: rgba(5,150,105,0.12); color: #059669; }
+  body.light .pill-amber { background: rgba(180,83,9,0.12); color: #b45309; }
+  body.light .pill-red { background: rgba(220,38,38,0.12); color: #dc2626; }
+  body.light .pill-blue { background: rgba(59,92,228,0.12); color: #3b5ce4; }
+  body.light .header-badge { background: rgba(59,92,228,0.10); border-color: rgba(59,92,228,0.22); color: #3b5ce4; }
+  body.light .restit-alert { background: linear-gradient(135deg, rgba(5,150,105,0.08), rgba(5,150,105,0.04)); border-color: rgba(5,150,105,0.25); }
+  body.light .restit-icon, body.light .restit-value { color: #059669; }
+  body.light .calc-step-val.ok { color: #059669; }
+  body.light .calc-step-val.warn { color: #dc2626; }
+  body.light .calc-step-val.info { color: #3b5ce4; }
+  body.light tbody tr.t4-row { background: rgba(59,92,228,0.04); }
+  body.light .metric-card.positive { background: rgba(5,150,105,0.08); border-color: rgba(5,150,105,0.2); }
+  body.light .metric-card.negative { background: rgba(220,38,38,0.08); border-color: rgba(220,38,38,0.2); }
+  body.light .metric-card.positive .metric-value { color: #059669; }
+  body.light .metric-card.negative .metric-value { color: #dc2626; }
+  body.light .metric-card.warning .metric-value { color: #b45309; }
+
+  /* ── Botão tema ── */
+  .theme-btn {
+    position: fixed;
+    top: 18px; right: 20px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--bg2);
+    border: 1px solid var(--border-strong);
+    border-radius: 24px;
+    padding: 7px 14px 7px 10px;
+    cursor: pointer;
+    font-family: 'Sora', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .theme-btn:hover { border-color: var(--accent); color: var(--text); }
+  .theme-btn .icon { font-size: 15px; line-height: 1; transition: transform 0.3s; }
+  .theme-btn:hover .icon { transform: rotate(20deg); }
+
+  /* ── Variação coluna — garantir visibilidade ── */
+  td.var-pos { color: var(--red) !important; font-weight: 600 !important; }
+  td.var-neg { color: var(--green) !important; font-weight: 600 !important; }
+  td.var-zero { color: var(--text-muted) !important; }
+  tfoot td.var-pos { color: var(--red) !important; font-weight: 700 !important; }
+  tfoot td.var-neg { color: var(--green) !important; font-weight: 700 !important; }
+
+  /* ── CSLL aviso ── */
+  .csll-notice {
+    display: none;
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.25);
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    font-size: 12px;
+    color: var(--amber);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  .csll-notice.show { display: block; }
+
+  /* ── Animations ── */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .anim { animation: fadeUp 0.3s ease forwards; }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .scenario-tabs { grid-template-columns: 1fr; }
+    .inputs-grid { grid-template-columns: repeat(2, 1fr); }
+    .metrics-grid { grid-template-columns: 1fr; }
+    .controls-row { grid-template-columns: 1fr; }
+    h1 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Botão tema -->
+<button class="theme-btn" onclick="toggleTheme()" id="theme-btn">
+  <span class="icon" id="theme-icon">☀️</span>
+  <span id="theme-label">Tema claro</span>
+</button>
+
+<div class="header">
+  <div class="header-badge">LC 224/2025 · IN RFB 2.305 · IN 2.306/2026</div>
+  <h1>Simulador — <em>Lucro Presumido</em></h1>
+  <div class="header-sub">Redução linear de benefícios tributários · Acréscimo de 10% nos percentuais de presunção · Art. 14 e 15 da IN RFB 2.305/2025</div>
+</div>
+
+<div class="main">
+
+  <!-- Scenario selector -->
+  <div class="scenario-label">Selecione o cenário — §5º do art. 15</div>
+  <div class="scenario-tabs">
+    <button class="stab stab-1 active active-1" onclick="setScenario(1)">
+      <div class="stab-dot"></div>
+      <div class="stab-num">Cenário I</div>
+      <div class="stab-title">Receita anual &lt; R$ 5.000.000</div>
+      <div class="stab-desc">Acréscimo aplicado indevidamente → ajuste no 4T com possível restituição</div>
+    </button>
+    <button class="stab stab-2" onclick="setScenario(2)">
+      <div class="stab-dot"></div>
+      <div class="stab-num">Cenário II</div>
+      <div class="stab-title">Excedente anual &lt; soma excedentes T1–T3</div>
+      <div class="stab-desc">4T fraco → recálculo proporcional entre trimestres e ajuste</div>
+    </button>
+    <button class="stab stab-3" onclick="setScenario(3)">
+      <div class="stab-dot"></div>
+      <div class="stab-num">Cenário III</div>
+      <div class="stab-title">Excedente anual &gt; soma excedentes T1–T3</div>
+      <div class="stab-desc">4T forte → excedente residual aplicado no T4, sem ajuste retroativo</div>
+    </button>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-row">
+    <div class="ctrl-card">
+      <div class="ctrl-label">Atividade / percentual de presunção</div>
+      <select id="ativ" onchange="calc()">
+        <option value="0.32" selected>Serviços em geral — 32%</option>
+        <option value="0.08">Comércio e indústria — 8%</option>
+        <option value="0.16">Serviços hospitalares / transporte de carga — 16%</option>
+        <option value="0.08">Revenda de combustíveis — 1,6% (aqui: 8% p/ ex.)</option>
+      </select>
+    </div>
+    <div class="ctrl-card">
+      <div class="ctrl-label">Tributo</div>
+      <select id="trib" onchange="calc()">
+        <option value="0.09" selected>CSLL — 9%</option>
+        <option value="0.15">IRPJ — 15%</option>
+        <option value="0.25">IRPJ + adicional — 25% (aprox.)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Inputs -->
+  <div class="inputs-section">
+    <div class="scenario-label" style="margin-bottom:10px">Receita bruta por trimestre</div>
+    <div class="inputs-grid" id="inputs-grid">
+      <!-- gerado pelo JS -->
+    </div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics-grid" id="metrics-grid">
+    <!-- gerado pelo JS -->
+  </div>
+
+  <!-- Restituição alert -->
+  <div class="restit-alert" id="restit-alert">
+    <div class="restit-icon">✓</div>
+    <div class="restit-text" id="restit-text"></div>
+  </div>
+
+  <!-- Aviso CSLL -->
+  <div class="csll-notice" id="csll-notice">
+    ⚠️ <strong>CSLL em 2026 — atenção (Q&amp;A RFB itens 12 e 13):</strong> O acréscimo de 10% nos percentuais de presunção aplica-se à CSLL somente a partir do <strong>2º trimestre de 2026</strong> (vigência 01/04/2026 — anterioridade nonagesimal). Para a CSLL, o limite anual proporcional é de <strong>R$ 3.750.000,00</strong> (¾ do limite anual = 3 trimestres × R$ 1.250.000). O T1 da CSLL é calculado sem acréscimo. Os cálculos abaixo já refletem essa regra.
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <div class="table-header">
+      <span>Apuração trimestral detalhada</span>
+    </div>
+    <div class="table-scroll">
+    <table>
+      <colgroup>
+        <col><col><col><col><col><col><col><col>
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Trimestre</th>
+          <th class="num">Receita bruta</th>
+          <th class="num">Dentro do limite</th>
+          <th class="num">Excedente trib.</th>
+          <th class="num">Base presunção</th>
+          <th class="num">Trib. s/ LC 224</th>
+          <th class="num">Trib. c/ LC 224</th>
+          <th class="num">Variação (R$)</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+      <tfoot id="table-foot"></tfoot>
+    </table>
+    </div>
+  </div>
+
+  <!-- Calc memory -->
+  <div class="calc-box">
+    <div class="calc-box-header">
+      <div class="calc-box-title">Memória de cálculo — 4º Trimestre (ajuste anual)</div>
+      <div id="scenario-pill"></div>
+    </div>
+    <div class="calc-steps" id="calc-steps"></div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <span>LC 224/2025 · Decreto 12.808/2025 · Portaria MF 3.278/2025 · IN RFB 2.305/2025 (red. IN 2.306/2026)</span>
+  <span>Limite anual: R$ 5.000.000 · Limite trimestral proporcional: R$ 1.250.000</span>
+</div>
+
+<script>
+const LIMIT_ANO = 5000000;
+const LIMIT_TRI = 1250000;
+const LIMIT_ANO_CSLL_2026 = 3750000;   // ¾ do limite — Q&A RFB item 13
+let currentScenario = 1;
+
+const presets = {
+  1: [1800000, 1600000, 900000, 500000],
+  2: [1800000, 1600000, 1400000, 600000],
+  3: [1800000, 1600000, 1400000, 2200000],
+};
+
+/* ── Tema ── */
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  document.getElementById('theme-icon').textContent = isLight ? '🌙' : '☀️';
+  document.getElementById('theme-label').textContent = isLight ? 'Tema escuro' : 'Tema claro';
+}
+
+function brl(v) { return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
+function pct(v) { return (v * 100).toFixed(2).replace('.', ',') + '%'; }
+
+function buildInputs() {
+  const grid = document.getElementById('inputs-grid');
+  grid.innerHTML = ['1','2','3','4'].map((q, i) => {
+    const isT4 = i === 3;
+    const vals = presets[currentScenario];
+    return `<div class="inp-card${isT4 ? ' t4' : ''}" id="icard-${i}">
+      <div class="inp-quarter">T${q}${isT4 ? ' · Ajuste' : ''}</div>
+      <div class="inp-label">${isT4 ? 'Último trimestre' : q + 'º trimestre'} 2026</div>
+      <div class="inp-field">
+        <span class="inp-prefix">R$</span>
+        <input type="number" id="r${i+1}" value="${vals[i]}" step="50000" oninput="updateBar(${i}); calc()" min="0">
+      </div>
+      <div class="inp-limit-bar"><div class="inp-limit-fill" id="bar-${i}" style="width:0%"></div></div>
+      <div class="inp-limit-label" id="bar-label-${i}"></div>
+    </div>`;
+  }).join('');
+  [0,1,2,3].forEach(i => updateBar(i));
+}
+
+function updateBar(i) {
+  const v = parseFloat(document.getElementById('r'+(i+1)).value) || 0;
+  const pctV = Math.min(100, (v / LIMIT_TRI) * 100);
+  const fill = document.getElementById('bar-'+i);
+  const lbl = document.getElementById('bar-label-'+i);
+  fill.style.width = pctV + '%';
+  if (v > LIMIT_TRI) {
+    fill.style.background = 'linear-gradient(90deg, #34d399, #f87171)';
+    lbl.textContent = 'Excede limite em ' + brl(v - LIMIT_TRI);
+    lbl.style.color = '#f87171';
+  } else {
+    fill.style.background = 'linear-gradient(90deg, #6c8fff, #a78bfa)';
+    lbl.textContent = (100 - pctV).toFixed(0) + '% disponível do limite';
+    lbl.style.color = '';
+  }
+}
+
+function setScenario(n) {
+  currentScenario = n;
+  document.querySelectorAll('.stab').forEach((b, i) => {
+    b.classList.remove('active','active-1','active-2','active-3');
+    if (i+1 === n) { b.classList.add('active', 'active-'+n); }
+  });
+  presets[n].forEach((v, i) => {
+    const el = document.getElementById('r'+(i+1));
+    if (el) { el.value = v; updateBar(i); }
+  });
+  calc();
+}
+
+function calc() {
+  const r = [1,2,3,4].map(i => Math.max(0, parseFloat(document.getElementById('r'+i).value) || 0));
+  const p = parseFloat(document.getElementById('ativ').value);
+  const aliq = parseFloat(document.getElementById('trib').value);
+  const p10 = p * 1.10;
+
+  // ── Regra CSLL 2026: acréscimo só a partir do T2 (Q&A RFB item 12) ──
+  // IRPJ: valor 0.15 ou 0.25 → acréscimo desde T1
+  // CSLL: valor 0.09 → acréscimo só T2, T3, T4; limite anual = R$3.750.000
+  const isCsll = (aliq === 0.09);
+  // Para CSLL: T1 NÃO tem acréscimo; limite anual efetivo = 3/4 de R$5M = R$3.750.000
+  const limitAnoEfetivo = isCsll ? LIMIT_ANO_CSLL_2026 : LIMIT_ANO;
+  // Trimestres válidos para acréscimo (índices 0-based)
+  // CSLL: T2(índice1), T3(índice2), T4(índice3) = trimestres com acréscimo
+  // IRPJ: T1(0), T2(1), T3(2), T4(3) = todos
+  const primeiroTrimAcrescimo = isCsll ? 1 : 0; // 0-based
+
+  const recAno = r.reduce((a,b)=>a+b,0);
+
+  // Receita relevante para o limite: apenas trimestres com acréscimo
+  const recTrimAcrescimo = r.filter((_, i) => i >= primeiroTrimAcrescimo).reduce((a,b)=>a+b, 0);
+
+  // Excedente acumulado relevante (sobre receita dos trimestres com acréscimo)
+  const excAnoEfetivo = Math.max(0, recTrimAcrescimo - limitAnoEfetivo);
+
+  // Excedentes trimestrais dos T com acréscimo (excluindo T1 para CSLL)
+  const excTrimAcrescimo = r.map((ri, i) => {
+    if (i < primeiroTrimAcrescimo) return 0; // T1 CSLL: sem acréscimo
+    return Math.max(0, ri - LIMIT_TRI);
+  });
+
+  // Para fins dos cenários do §5º, considerar apenas T1-T3 com acréscimo
+  // Para CSLL: T2 e T3 (índices 1 e 2); Para IRPJ: T1, T2, T3 (índices 0,1,2)
+  const excT123 = excTrimAcrescimo.slice(0, 3); // índices 0,1,2
+  const somaExcT123 = excT123.reduce((a,b)=>a+b, 0);
+
+  function tributoNormal(ri) { return ri * p * aliq; }
+  function tributoComAcrescimo(ri) {
+    const dentro = Math.min(ri, LIMIT_TRI);
+    const fora = Math.max(0, ri - LIMIT_TRI);
+    return (dentro * p + fora * p10) * aliq;
+  }
+
+  const tribNorm = r.map(tributoNormal);
+
+  // Tributo apurado por trimestre (respeitando regra CSLL T1)
+  const tribTrim = r.map((ri, i) => {
+    if (i < primeiroTrimAcrescimo) return tributoNormal(ri); // T1 CSLL = sem acréscimo
+    return tributoComAcrescimo(ri);
+  });
+
+  const tribTrim123 = tribTrim.slice(0, 3);
+  const somaDevido123 = tribTrim123.reduce((a,b)=>a+b, 0);
+  const somaNorm123 = tribNorm.slice(0,3).reduce((a,b)=>a+b, 0);
+
+  // Para os cenários do §5º, a receita dos T com acréscimo nos T1-T3
+  const recTrim123AcrescimoParcial = r.slice(0,3).filter((_,i) => i >= primeiroTrimAcrescimo).reduce((a,b)=>a+b,0);
+
+  let t4Final, cenario, credRestit = 0, ajuste = 0;
+  let steps = [];
+
+  // Determinar cenário: baseado na receita dos trimestres com acréscimo
+  if (recTrimAcrescimo <= limitAnoEfetivo) {
+    cenario = 1;
+    ajuste = somaDevido123 - somaNorm123;
+    t4Final = Math.max(0, tribNorm[3] - ajuste);
+    credRestit = Math.max(0, ajuste - tribNorm[3]);
+    const csllNote = isCsll ? ' (CSLL: sem acréscimo no T1 — item 12 Q&A RFB)' : '';
+    steps = [
+      { k: 'Tributo', v: isCsll ? 'CSLL — acréscimo a partir do T2' : 'IRPJ — acréscimo a partir do T1', cls: isCsll ? 'warn' : 'info' },
+      { k: 'Receita dos trimestres com acréscimo', v: brl(recTrimAcrescimo) },
+      { k: 'Limite anual efetivo' + (isCsll ? ' (¾ × R$5M — item 13)' : ''), v: brl(limitAnoEfetivo), cls:'info' },
+      { k: 'Diagnóstico', v: 'Receita ≤ limite → acréscimo nos T com acréscimo foi indevido', cls:'ok' },
+      { k: 'Excedente tributado com acréscimo (T1-T3)', v: brl(somaExcT123) },
+      { k: 'Tributo recolhido T1-T3 (com acréscimo)' + csllNote, v: brl(somaDevido123), cls:'warn' },
+      { k: 'Tributo correto T1-T3 (% normal)', v: brl(somaNorm123), cls:'ok' },
+      { k: 'Diferença a deduzir no T4 (§5º, I)', v: brl(ajuste), cls:'info' },
+      { k: 'T4 — tributo pelo % normal', v: brl(tribNorm[3]) },
+      { k: 'T4 — após dedução da diferença', v: brl(t4Final), cls: t4Final < tribNorm[3] ? 'ok' : '' },
+      credRestit > 0 ? { k: 'Crédito restituível / compensável (§7º e §8º)', v: brl(credRestit)+' + SELIC + 1%', cls:'ok' } : null,
+    ].filter(Boolean);
+  } else if (excAnoEfetivo < somaExcT123 && somaExcT123 > 0) {
+    cenario = 2;
+    const excProporcional = excT123.map(ex => somaExcT123 > 0 ? (ex / somaExcT123) * excAnoEfetivo : 0);
+    const tribRecalc = excProporcional.map((excR, i) => {
+      const ri = r[i];
+      if (i < primeiroTrimAcrescimo) return tributoNormal(ri);
+      const dentro = Math.min(ri, LIMIT_TRI) * p * aliq;
+      const fora = excR * p10 * aliq;
+      return dentro + fora;
+    });
+    const somaTribRecalc = tribRecalc.reduce((a,b)=>a+b,0);
+    ajuste = somaDevido123 - somaTribRecalc;
+    t4Final = Math.max(0, tribNorm[3] - ajuste);
+    credRestit = Math.max(0, ajuste - tribNorm[3]);
+    steps = [
+      { k: 'Tributo', v: isCsll ? 'CSLL — acréscimo a partir do T2 (item 12 Q&A RFB)' : 'IRPJ — acréscimo desde T1', cls: isCsll ? 'warn' : 'info' },
+      { k: 'Receita dos trimestres com acréscimo', v: brl(recTrimAcrescimo) },
+      { k: 'Excedente anual efetivo' + (isCsll ? ' (limite ¾ = R$3,75M)' : ''), v: brl(excAnoEfetivo), cls:'info' },
+      { k: 'Soma dos excedentes T1-T3 apurados', v: brl(somaExcT123), cls:'warn' },
+      { k: 'Diagnóstico', v: 'Excedente anual < soma T1-T3 → recálculo proporcional', cls:'ok' },
+      ...excT123.map((ex,i) => ({ k: `  Excedente T${i+1} recalculado (proporção)`, v: brl(excProporcional[i]) })),
+      { k: 'Tributo T1-T3 recalculado (base proporcional)', v: brl(somaTribRecalc), cls:'ok' },
+      { k: 'Tributo T1-T3 realmente recolhido', v: brl(somaDevido123), cls:'warn' },
+      { k: 'Diferença a deduzir no T4 (§5º, II)', v: brl(ajuste), cls:'info' },
+      { k: 'T4 — tributo pelo % normal', v: brl(tribNorm[3]) },
+      { k: 'T4 — após dedução da diferença', v: brl(t4Final), cls:'ok' },
+      credRestit > 0 ? { k: 'Crédito restituível (§7º e §8º)', v: brl(credRestit)+' + SELIC + 1%', cls:'ok' } : null,
+    ].filter(Boolean);
+  } else {
+    cenario = 3;
+    const excResidualT4 = Math.max(0, excAnoEfetivo - somaExcT123);
+    const dentro4 = Math.min(r[3], LIMIT_TRI);
+    const excedenteLimitadoT4 = Math.min(excResidualT4, Math.max(0, r[3] - LIMIT_TRI));
+    const restoNormal4 = Math.max(0, r[3] - LIMIT_TRI - excedenteLimitadoT4);
+    t4Final = (dentro4 * p + excedenteLimitadoT4 * p10 + restoNormal4 * p) * aliq;
+    ajuste = 0;
+    steps = [
+      { k: 'Tributo', v: isCsll ? 'CSLL — acréscimo a partir do T2 (item 12 Q&A RFB)' : 'IRPJ — acréscimo desde T1', cls: isCsll ? 'warn' : 'info' },
+      { k: 'Receita dos trimestres com acréscimo', v: brl(recTrimAcrescimo) },
+      { k: 'Excedente anual efetivo' + (isCsll ? ' (limite ¾ = R$3,75M)' : ''), v: brl(excAnoEfetivo), cls:'info' },
+      { k: 'Soma dos excedentes T1-T3 já tributados', v: brl(somaExcT123) },
+      { k: 'Diagnóstico', v: 'Excedente anual > soma T1-T3 → T4 forte; excedente residual', cls:'warn' },
+      { k: 'Excedente residual para T4 (§5º, III)', v: brl(excResidualT4), cls:'info' },
+      { k: 'T4 — dentro do limite (% normal)', v: brl(dentro4) },
+      { k: 'T4 — excedente residual (% acrescido)', v: brl(excedenteLimitadoT4), cls:'warn' },
+      restoNormal4 > 0 ? { k: 'T4 — restante acima do excedente (% normal)', v: brl(restoNormal4) } : null,
+      { k: 'T4 — tributo apurado (misto)', v: brl(t4Final), cls:'info' },
+      { k: 'Ajuste retroativo nos T1-T3', v: 'Não há — nenhum recálculo', cls:'ok' },
+    ].filter(Boolean);
+  }
+
+  const tribTotal = tribTrim[0] + tribTrim[1] + tribTrim[2] + t4Final;
+  const tribSemLC = tribNorm.reduce((a,b)=>a+b,0);
+  const diferenca = tribTotal - tribSemLC;
+  const pctDif = tribSemLC > 0 ? (diferenca / tribSemLC * 100).toFixed(2).replace('.',',') + '%' : '—';
+
+  // Aviso CSLL
+  document.getElementById('csll-notice').classList.toggle('show', isCsll);
+
+  // Metrics
+  const metricConfig = [
+    { label: 'Tributo sem LC 224 (ano)', val: brl(tribSemLC), sub: `% presunção: ${pct(p)} · alíquota: ${pct(aliq)}`, cls: 'neutral' },
+    { label: 'Tributo com LC 224 (ano)', val: brl(tribTotal), sub: isCsll ? `% acrescido: ${pct(p10)} sobre excedente (T2-T4)` : `% acrescido: ${pct(p10)} sobre excedente`, cls: 'neutral' },
+    { label: diferenca >= 0 ? 'Acréscimo total no ano' : 'Redução no ano', val: (diferenca >= 0 ? '+' : '') + brl(diferenca), sub: `${pctDif} sobre tributação original`, cls: diferenca > 0 ? 'negative' : diferenca < 0 ? 'positive' : 'neutral' },
+  ];
+
+  document.getElementById('metrics-grid').innerHTML = metricConfig.map(m =>
+    `<div class="metric-card ${m.cls} anim">
+      <div class="metric-label">${m.label}</div>
+      <div class="metric-value">${m.val}</div>
+      <div class="metric-sub">${m.sub}</div>
+    </div>`
+  ).join('');
+
+  // Restituição
+  const alertEl = document.getElementById('restit-alert');
+  const textEl = document.getElementById('restit-text');
+  if (credRestit > 0) {
+    alertEl.classList.add('show');
+    textEl.innerHTML = `Crédito de <span class="restit-value">${brl(credRestit)}</span> disponível para restituição ou compensação — acrescido de <b>SELIC + 1%</b> a partir do mês seguinte ao encerramento do 4T (§7º e §8º do art. 15, IN RFB 2.306/2026).`;
+  } else {
+    alertEl.classList.remove('show');
+  }
+
+  // Table
+  const rowCenLabel = ['I','II','III'][cenario-1];
+  const pillCls = ['pill-green','pill-amber','pill-red'][cenario-1];
+  const excT4Used = cenario === 3 ? Math.min(Math.max(0, r[3] - LIMIT_TRI), excAnoEfetivo - somaExcT123) : 0;
+
+  const rows = [0,1,2,3].map(i => {
+    const ri = r[i];
+    const dentro = Math.min(ri, LIMIT_TRI);
+    const excTi = i < 3 ? excT123[i] : excT4Used;
+    const tribN = tribNorm[i];
+    const tribC = i < 3 ? tribTrim[i] : t4Final;
+    const delta = tribC - tribN;
+    const isT4 = i === 3;
+    const semAcrescimo = isCsll && i === 0; // T1 CSLL
+
+    const varClass = delta > 0 ? 'num var-pos' : delta < 0 ? 'num var-neg' : 'num var-zero';
+    const varDisplay = delta !== 0 ? (delta > 0 ? '+' : '') + brl(delta) : '—';
+
+    return `<tr class="${isT4?'t4-row':''}">
+      <td>
+        <span style="font-weight:500">T${i+1}</span>
+        ${isT4 ? `<span class="pill ${pillCls}" style="margin-left:6px">Cen. ${rowCenLabel}</span>` : ''}
+        ${semAcrescimo ? `<span class="pill pill-amber" style="margin-left:6px;font-size:9px">sem acrésc.</span>` : ''}
+      </td>
+      <td class="num">${brl(ri)}</td>
+      <td class="num">${brl(dentro)}</td>
+      <td class="num">${excTi > 0 ? brl(excTi) : '<span style="color:var(--text-dim)">—</span>'}</td>
+      <td class="num" style="font-family:'DM Mono',monospace">${brl(ri * p)}</td>
+      <td class="num">${brl(tribN)}</td>
+      <td class="num" style="font-weight:500">${brl(tribC)}</td>
+      <td class="${varClass}">${varDisplay}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('table-body').innerHTML = rows;
+
+  const totalDeltaClass = diferenca > 0 ? 'num var-pos' : diferenca < 0 ? 'num var-neg' : 'num var-zero';
+  const totalDeltaDisplay = diferenca > 0 ? '+' + brl(diferenca) : brl(diferenca);
+  document.getElementById('table-foot').innerHTML = `<tr>
+    <td style="color:var(--text-muted)">Total anual</td>
+    <td class="num">${brl(recAno)}</td>
+    <td class="num"></td>
+    <td class="num">${brl(excAnoEfetivo)}</td>
+    <td class="num"></td>
+    <td class="num">${brl(tribSemLC)}</td>
+    <td class="num">${brl(tribTotal)}</td>
+    <td class="${totalDeltaClass}">${totalDeltaDisplay}</td>
+  </tr>`;
+
+  // Scenario pill
+  const pillColors = { 1:'pill-green', 2:'pill-amber', 3:'pill-red' };
+  document.getElementById('scenario-pill').innerHTML =
+    `<span class="pill ${pillColors[cenario]}">Cenário ${['I','II','III'][cenario-1]}</span>`;
+
+  // Calc steps
+  document.getElementById('calc-steps').innerHTML = steps.map(s =>
+    `<div class="calc-step">
+      <span class="calc-step-key">${s.k}</span>
+      <span class="calc-step-val ${s.cls||''}">${s.v}</span>
+    </div>`
+  ).join('');
+}
+
+buildInputs();
+calc();
+
+document.querySelectorAll('.stab').forEach((b,i) => {
+  if (i+1 === 1) { b.classList.add('active','active-1'); }
+});
+</script>
+</body>
+</html>
